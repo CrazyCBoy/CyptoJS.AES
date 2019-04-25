@@ -1,0 +1,64 @@
+{
+调方法传参
+String password = userService.decrypt(loginRequest);
+loginRequest.setPassword(password);
+}
+
+/**
+* 解密密码
+*
+* @param loginRequest 接受的的用户名和加密的密码
+*/
+public static String decrypt(LoginForm loginRequest) {
+String key = "abcdef0123456789"; // 长度必须是 16
+String iv = "abcdef0123456789"; // 长度必须是 16
+//获取加密码
+String content = loginRequest.getPassword();
+// stringToBase64() 将 Base64编码的字符串转换成 byte[] !!!与base64ToString(）配套使用
+try {
+return new String(AES_CBC_Decrypt(stringToBase64(content), key.getBytes(), iv.getBytes()));
+} catch (Exception e) {
+e.printStackTrace();
+return null;
+}
+}
+
+private static byte[] AES_CBC_Decrypt(byte[] content, byte[] keyBytes, byte[] iv) {
+try {
+SecretKeySpec key = new SecretKeySpec(keyBytes, "AES");
+Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+cipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(iv));
+byte[] result = cipher.doFinal(content);
+return result;
+} catch (Exception e) {
+System.out.println("exception:" + e.toString());
+}
+return null;
+}
+/**
+* 字符串装换成 Base64
+*/
+public static byte[] stringToBase64(String key) throws Exception {
+return Base64.decodeBase64(key.getBytes());
+}
+
+
+前端加密，使用技术vue
+Login({commit}, loginForm) {
+var password = CryptoJS.AES.encrypt(loginForm.login_pass, CryptoJS.enc.Utf8.parse('abcdef0123456789'), {
+iv: CryptoJS.enc.Utf8.parse('abcdef0123456789'),
+mode: CryptoJS.mode.CBC,
+padding: CryptoJS.pad.Pkcs7
+})
+return new Promise((resolve, reject) => {
+login(loginForm.login_email, "" + password).then(response => {
+setToken(response.token)
+resolve()
+}).catch(error => {
+console.log(error)
+reject(error)
+})
+})
+},
+
+
